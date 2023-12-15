@@ -1,0 +1,48 @@
+#!/bin/bash
+# Repository general commit hook.
+
+# Basic principles: get the list of changed files so users can work with an
+# inconsistent repository.
+
+source include.sh
+
+log "Pre-Commit"
+
+# NOTE: None of the Python tools we have apply exclusions to their command line, and
+# the bigger logic here is that CI will never make this distinction anyway. So
+# we *don't* at the moment use the below list in anyway. A better solution would be
+# to callout to a Python script which could parse all the different exclude specs.
+
+files_in_commit=()
+while read fileline ; do
+    commit_file="$(echo "$fileline" | cut -f2-)"
+    files_in_commit+=( "$commit_file" )
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+# ./fmt automatically (it's just annoying not too)
+retcode=0
+
+if ! ./fmt ; then
+    error "Code-formatting failed."
+    retcode=1
+fi
+
+if ! git add "${files_in_commit[@]}"; then
+    fatal "Error adding modified files back to commit."
+fi
+
+if ! ./lint ; then
+    error "Lint errors. Use git commit --no-verify to ignore."
+    retcode=1
+fi
+
+if ! ./typecheck ; then
+    error "Typechecking errors. Use git commit --no-verify to ignore."
+    retcode=1
+fi
+
+if [ $retcode != 0 ]; then
+    fatal $retcode "Pre-commit hooks failed."
+fi
+
+exit 0

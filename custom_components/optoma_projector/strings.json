@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+          "title": "Optoma Projector Connection Details",
+          "description": "Configure the URL, username and password for the Optoma projector",
+          "data": {
+            "url": "Projector URL",
+            "username": "Username",
+            "password": "Password"
+          },
+          "data_description": {
+              "url": "Projector URL including scheme (i.e. http://)",
+              "username": "Username for the web interface",
+              "password": "Password for the web interface"
+          }
+      }
+    }
+  }
+}

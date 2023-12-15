@@ -1,0 +1,6 @@
+# This file is a list of git commits which should be ignored for the purposes of git blame.
+# List the commit, along with a comment describing why it's ignored.
+# e.g.
+# # Fix line endings
+# 237de8a6367a88649a3f161112492d0d70d83707
+
