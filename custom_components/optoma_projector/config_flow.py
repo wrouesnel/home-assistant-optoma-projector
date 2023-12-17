@@ -4,7 +4,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 
-from .const import DOMAIN
+from .const import CONFIG_PASSWORD, CONFIG_URL, CONFIG_USERNAME, DOMAIN
 
 
 class OptomaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore
@@ -15,12 +15,12 @@ class OptomaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignor
             await self.async_set_unique_id(user_input["url"])
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
-                title="Optoma Projector Connection Details",
+                title="Optoma Projector",
                 data={},
                 options={
-                    "url": user_input["url"],
-                    "username": user_input["username"],
-                    "password": user_input["password"],
+                    CONFIG_URL: user_input[CONFIG_URL],
+                    CONFIG_USERNAME: user_input[CONFIG_USERNAME],
+                    CONFIG_PASSWORD: user_input[CONFIG_PASSWORD],
                 },
             )
 
@@ -28,9 +28,9 @@ class OptomaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignor
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required("url"): str,
-                    vol.Required("username", default="admin"): str,
-                    vol.Required("password", default="admin"): str,
+                    vol.Required(CONFIG_URL): str,
+                    vol.Required(CONFIG_USERNAME, default="admin"): str,
+                    vol.Required(CONFIG_PASSWORD, default="admin"): str,
                 }
             ),
         )
