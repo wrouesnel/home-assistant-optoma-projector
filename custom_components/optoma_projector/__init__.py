@@ -29,9 +29,9 @@ from .const import (
 
 PLATFORMS: List[Platform] = [
     Platform.MEDIA_PLAYER,
-    Platform.BUTTON,
-    # Platform.NUMBER,
-    # Platform.SELECT,
+    # Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SELECT,
     Platform.SWITCH,
     # Platform.REMOTE,
 ]
@@ -108,7 +108,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        domain_entry_info = hass.data[DOMAIN].pop(entry.entry_id)
+        manager: Manager = hass.data[DOMAIN].pop(entry.entry_id)
+        await manager.shutdown()
 
     if len(hass.data[DOMAIN]) == 0:
         hass.data.pop(DOMAIN)
@@ -136,21 +137,53 @@ class Manager:
 
         self._result = ProjectorState(state={}, info={})
 
+        self._shutdown = asyncio.Event()
+
     @property
     def state(self) -> ProjectorState:
         return self._result
 
     def update_state(self) -> ProjectorState:
-        return ProjectorState(
-            state=self._projector.status(), info=self._projector.info()
-        )
+        # TODO: I guess mark the projector as down?
+        try:
+            return ProjectorState(
+                state=self._projector.status(), info=self._projector.info()
+            )
+        except Exception as e:
+            LOGGER.warning(
+                "Could not connect to projector to retrieve status", exc_info=e
+            )
+            return ProjectorState(state={}, info={})
 
     async def loop(self):
         """Projector monitoring loop"""
+        LOGGER.info("Starting projector message poll loop")
         while True:
             self._result = await self._hass.async_add_executor_job(self.update_state)
+            # LOGGER.debug("State Updated")
             self._call_registered_update_callbacks(self._result)
-            await asyncio.sleep(self._loop_interval)
+
+            done, _ = await asyncio.wait(
+                [
+                    self._hass.async_create_background_task(
+                        self._shutdown.wait(), f"{DOMAIN}_wait_shutdown"
+                    ),
+                    self._hass.async_create_background_task(
+                        asyncio.sleep(self._loop_interval),
+                        f"{DOMAIN}_wait_poll_interval",
+                    ),
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if any(t.cancelled() for t in done):
+                break
+            if self._shutdown.is_set():
+                break
+        LOGGER.info("Optoma polling loop exiting")
+
+    async def shutdown(self):
+        """Request loop shutdown"""
+        self._shutdown.set()
 
     @property
     def projector(self) -> Projector:

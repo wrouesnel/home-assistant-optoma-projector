@@ -14,19 +14,12 @@ class OptomaProjectorSettingEntity:
     _attr_has_entity_name = True
 
     def __init__(
-        self, unique_id: str, description: EntityDescription, manager: Manager
+        self, unique_id: str, description: EntityDescription, manager: Manager, key: str
     ):
         self.entity_description = description
 
-        # function_names = getattr(self.entity_description, "function_names", None)
-        # self._relevant_updates = ["PWR"]
-        # self._relevant_updates.extend(
-        #     function_names or [self.entity_description.key.upper()]
-        # )
-        #
-        # self._receiver_unique_id_subunit_id = f"{receiver_unique_id}_{self._subunit.id}"
-
         self._manager = manager
+        self._key = key
 
         self._device_id = unique_id
 
@@ -39,6 +32,7 @@ class OptomaProjectorSettingEntity:
         self._attr_unique_id: str | None = (
             f"{self._device_id}_{self.entity_description.key}"
         )
+        pass
 
     def update_callback(self, value: ProjectorState):
         self.schedule_update_ha_state()  # type: ignore
@@ -52,8 +46,4 @@ class OptomaProjectorSettingEntity:
     @property
     def available(self):
         # Most projector functions can't be modified if the projector isn't powered on
-        return (
-            True
-            if self._manager.state.state.get("Power Status", "Off") == "On"
-            else False
-        )
+        return True if self._key in self._manager.state.state else False
