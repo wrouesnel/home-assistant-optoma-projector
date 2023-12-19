@@ -7,7 +7,7 @@
     "issue_tracker": "https://github.com/wrouesnel/home-assistant-optoma-projector/issues",
     "loggers": ["optoma_projector"],
     "requirements": [
-      "git+https://github.com/wrouesnel/optoma-web-api.git@v0.1.0"
+      "optoma-web-api@git+https://github.com/wrouesnel/optoma-web-api.git@v0.1.0"
     ],
     "version": "0.1.0",
     "config_flow": true
