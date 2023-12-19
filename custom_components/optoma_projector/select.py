@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import EntityDescription
 
 from . import Manager
 from .const import DOMAIN
-from .helpers import OptomaProjectorSettingEntity, projector_device_id
+from .helpers import OptomaProjectorSettingEntity, normalize_key, projector_device_id
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -61,16 +61,5 @@ class OptomaProjectorSelect(OptomaProjectorSettingEntity, SelectEntity):
 
     def select_option(self, option: str) -> None:
         """Change the selected option."""
-        # if self.entity_description.enum is not None:
-        #     value = [
-        #         e.value
-        #         for e in self.entity_description.enum
-        #         if slugify(e.value) == option
-        #     ]
-        #
-        #     if len(value) == 1:
-        #         setattr(
-        #             self._subunit,
-        #             self.entity_description.key,
-        #             self.entity_description.enum(value[0]),
-        #         )
+        set_fn = getattr(self._manager.projector, normalize_key(self._key))
+        set_fn(option)

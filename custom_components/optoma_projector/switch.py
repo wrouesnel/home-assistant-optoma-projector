@@ -5,6 +5,7 @@ from optoma_web_api import STATUS_VALUE_MAP
 from custom_components.optoma_projector.helpers import (
     Manager,
     OptomaProjectorSettingEntity,
+    normalize_key,
     projector_device_id,
 )
 from homeassistant.components.switch import SwitchEntity
@@ -68,10 +69,10 @@ class OptomaProjectorSwitch(OptomaProjectorSettingEntity, SwitchEntity):
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
-        # setattr(self._subunit, self.entity_description.key, self.entity_description.on)
-        LOGGER.error("Not implemented", kwargs=kwargs)
+        set_fn = getattr(self._manager.projector, normalize_key(self._key))
+        set_fn("On")
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
-        # setattr(self._subunit, self.entity_description.key, self.entity_description.off)
-        LOGGER.error("Not implemented", kwargs=kwargs)
+        set_fn = getattr(self._manager.projector, normalize_key(self._key))
+        set_fn("Off")

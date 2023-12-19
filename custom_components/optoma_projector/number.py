@@ -8,7 +8,12 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity import EntityDescription
 
 from .const import DOMAIN
-from .helpers import Manager, OptomaProjectorSettingEntity, projector_device_id
+from .helpers import (
+    Manager,
+    OptomaProjectorSettingEntity,
+    normalize_key,
+    projector_device_id,
+)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -59,5 +64,6 @@ class OptomaProjectorNumber(OptomaProjectorSettingEntity, NumberEntity):
         return self._manager.state.state.get(self._key, None)
 
     def set_native_value(self, value: float) -> None:
-        # setattr(self._subunit, self.entity_description.key, value)
-        pass
+        # Parse the key to get the set function on projector
+        set_fn = getattr(self._manager.projector, normalize_key(self._key))
+        set_fn(int(value))

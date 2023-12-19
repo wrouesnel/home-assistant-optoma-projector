@@ -127,6 +127,10 @@ def projector_device_id(manager: Manager) -> str:
     return device_id
 
 
+def normalize_key(key: str) -> str:
+    return key.lower().replace(" ", "_")
+
+
 class OptomaProjectorSettingEntity:
     """
     Common code for OptomaProjector settings entities.

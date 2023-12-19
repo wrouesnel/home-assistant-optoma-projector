@@ -50,23 +50,21 @@ class OptomaProjector(MediaPlayerEntity):
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
 
         # Register callbacks with the manager
-        self._manager.register_update_callback(self._get_state)
+        self._manager.register_update_callback(self.update_callback)
 
-    def _get_state(self, state: ProjectorState):
-        """State function invoked by the manager callback"""
+    def update_callback(self, value: ProjectorState):
         self._state = (
             MediaPlayerState.ON
-            if state.state.get("Power Status", "Off") == "On"
+            if value.state.get("Power Status", "Off") == "On"
             else MediaPlayerState.OFF
         )
         self._name = (
-            state.info[INFO_PROJECTOR_NAME]
-            if state.info.get(INFO_PROJECTOR_NAME, "") != ""
-            else state.info.get(INFO_MODEL_NAME, "")
+            value.info[INFO_PROJECTOR_NAME]
+            if value.info.get(INFO_PROJECTOR_NAME, "") != ""
+            else value.info.get(INFO_MODEL_NAME, "")
         )
-        self._source = state.state.get("Source")
+        self._source = value.state.get("Source")
 
-    def update_callback(self):
         self.schedule_update_ha_state()  # type: ignore
 
     @property
@@ -108,10 +106,10 @@ class OptomaProjector(MediaPlayerEntity):
         """Get current input sources."""
         return self._source
 
-    # async def async_select_source(self, source):
-    #     """Select input source."""
-    #     _LOGGER.info("Setting source to: %s", source)
-    #     self._projector.send_command(source)
+    def select_source(self, source):
+        """Select input source."""
+        _LOGGER.info("Setting source to: %s", source)
+        self._manager.projector.source(source)
 
     @property
     def should_poll(self):
