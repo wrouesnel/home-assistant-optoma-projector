@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import EntityDescription
 
 from . import Manager
 from .const import DOMAIN
-from .helpers import OptomaProjectorSettingEntity
+from .helpers import OptomaProjectorSettingEntity, projector_device_id
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -35,7 +35,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
         new_select = OptomaProjectorSelect(
-            unique_id=config_entry.entry_id,
+            projector_device_id(manager),
             description=entity_description,
             manager=manager,
             key=key,

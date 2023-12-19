@@ -11,8 +11,8 @@ from homeassistant.components.media_player import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from . import Manager, ProjectorState
 from .const import DOMAIN, INFO_MODEL_NAME, INFO_PROJECTOR_NAME, LOGGER
+from .helpers import Manager, ProjectorState, projector_device_id
 
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities):
@@ -20,7 +20,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
 
     entities = [
         OptomaProjector(
-            config_entry.entry_id,
+            projector_device_id(manager),
             manager,
         )
     ]
@@ -31,7 +31,7 @@ async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_entities)
 class OptomaProjector(MediaPlayerEntity):
     """Representation of Optoma Projector Device."""
 
-    def __init__(self, unique_id: str, manager: Manager):
+    def __init__(self, device_id: str, manager: Manager):
         """Initialize entity to control Optoma projector."""
 
         self._manager = manager
@@ -44,7 +44,7 @@ class OptomaProjector(MediaPlayerEntity):
 
         LOGGER.debug("Initialized Optoma Projector: %s" % self._manager.projector.url)
 
-        self._device_id = unique_id
+        self._device_id = device_id
         self._attr_unique_id = self._device_id
 
         self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._device_id)})
@@ -83,8 +83,10 @@ class OptomaProjector(MediaPlayerEntity):
     def supported_features(self):
         """Flag media player features that are supported."""
         return (
-            MediaPlayerEntityFeature.TURN_ON | MediaPlayerEntityFeature.TURN_OFF
-        )  # | MediaPlayerEntityFeature.SELECT_SOURCE
+            MediaPlayerEntityFeature.TURN_ON
+            | MediaPlayerEntityFeature.TURN_OFF
+            | MediaPlayerEntityFeature.SELECT_SOURCE
+        )
 
     def turn_on(self):
         """Turn on optoma."""

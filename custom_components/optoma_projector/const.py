@@ -15,3 +15,7 @@ INFO_FIRWMARE_VERSION = "Firmware Version"
 INFO_PROJECTOR_NAME = "Projector Name"
 
 DEFAULT_POLL_INTERVAL: int = 1
+
+LOCAL_LOGO_PATH = "local_logo_path"
+CUSTOM_IMAGE_BASE_URL = f"/api/{DOMAIN}/custom"
+STATIC_IMAGE_BASE_URL = f"/api/{DOMAIN}/static"

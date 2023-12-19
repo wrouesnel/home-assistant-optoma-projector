@@ -1,15 +1,14 @@
-from typing import Any, Mapping
+import numbers
+import typing
 
 from optoma_web_api import STATUS_VALUE_MAP
 
-from custom_components.optoma_projector import Manager, ProjectorState
-from custom_components.optoma_projector.helpers import OptomaProjectorSettingEntity
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity import EntityDescription
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN
+from .helpers import Manager, OptomaProjectorSettingEntity, projector_device_id
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -17,9 +16,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     entities = []
 
-    # Create switches for all 2-option entities
+    # Create number entries for all number fiells
     for key, value_dict in STATUS_VALUE_MAP.items():
-        if isinstance(value_dict, int):
+        if not isinstance(value_dict, type):
+            continue
+        if not issubclass(value_dict, numbers.Number):
             continue
 
         normalized_key = key.lower().replace(" ", "_")
@@ -31,7 +32,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
         new_number = OptomaProjectorNumber(
-            unique_id=config_entry.entry_id,
+            projector_device_id(manager),
             description=entity_description,
             manager=manager,
             key=key,
@@ -56,13 +57,6 @@ class OptomaProjectorNumber(OptomaProjectorSettingEntity, NumberEntity):
     def native_value(self) -> float | None:
         """Return the value reported by the number."""
         return self._manager.state.state.get(self._key, None)
-
-    # @property
-    # def native_max_value(self) -> float:
-    #     """Return the maximum value."""
-    #     if fn := self.entity_description.native_max_value_fn:
-    #         return fn(self._associated_zone)
-    #     return super().native_max_value
 
     def set_native_value(self, value: float) -> None:
         # setattr(self._subunit, self.entity_description.key, value)

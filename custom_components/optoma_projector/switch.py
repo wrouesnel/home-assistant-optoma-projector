@@ -2,8 +2,11 @@ from typing import Any, Mapping
 
 from optoma_web_api import STATUS_VALUE_MAP
 
-from custom_components.optoma_projector import Manager, ProjectorState
-from custom_components.optoma_projector.helpers import OptomaProjectorSettingEntity
+from custom_components.optoma_projector.helpers import (
+    Manager,
+    OptomaProjectorSettingEntity,
+    projector_device_id,
+)
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity import EntityDescription
@@ -37,7 +40,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
         new_switch = OptomaProjectorSwitch(
-            unique_id=config_entry.entry_id,
+            projector_device_id(manager),
             description=entity_description,
             manager=manager,
             key=key,
